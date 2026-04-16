@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="description" content="SecretNote — Tes secrets. Ton cahier. À jamais.">
+  <title>SecretNote — Ton cahier de secrets</title>
+  <link rel="stylesheet" href="css/style.css?v=3">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading">
+    <div class="logo"><svg width="60" height="60" viewBox="0 0 100 100" fill="none"><rect x="22" y="10" width="56" height="80" rx="4" fill="#111" stroke="#333" stroke-width="1.5"/><rect x="22" y="10" width="8" height="80" rx="2" fill="#1A1A1A" stroke="#333" stroke-width="1"/><line x1="36" y1="30" x2="70" y2="30" stroke="#333" stroke-width=".7"/><line x1="36" y1="38" x2="70" y2="38" stroke="#333" stroke-width=".7"/><line x1="36" y1="46" x2="70" y2="46" stroke="#333" stroke-width=".7"/><line x1="36" y1="54" x2="70" y2="54" stroke="#333" stroke-width=".7"/><line x1="36" y1="62" x2="70" y2="62" stroke="#333" stroke-width=".7"/><path d="M10 50Q15 47 20 50Q25 53 30 50Q35 47 40 50Q45 53 50 50Q55 47 60 50Q65 53 70 50Q75 47 80 50Q85 53 90 50" stroke="#FFF" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".9"/><path d="M50 5Q47 10 50 15Q53 20 50 25Q47 30 50 35Q53 40 50 45Q47 50 50 55Q53 60 50 65Q47 70 50 75Q53 80 50 85Q47 90 50 95" stroke="#FFF" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".9"/><circle cx="50" cy="50" r="3" fill="none" stroke="#FFF" stroke-width="1.8"/><rect x="42" y="44" width="16" height="13" rx="2" fill="#FFF"/><path d="M45 44V39A5 5 0 0 1 55 39V44" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="50" cy="50" r="2" fill="#111"/><rect x="49.2" y="50" width="1.6" height="4" rx=".5" fill="#111"/></svg></div>
+    <h1>SecretNote</h1>
+    <p>Tes secrets. Ton cahier. À jamais.</p>
+    <div class="bar"><div class="bar-fill"></div></div>
+  </div>
+
+  <div id="root"></div>
+
+  <!-- React CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="bundle.js?v=6"></script>
+  <script>
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loading').classList.add('hide');
+        setTimeout(function() { document.getElementById('loading').remove(); }, 500);
+      }, 2200);
+    });
+  </script>
+</body>
+</html>
