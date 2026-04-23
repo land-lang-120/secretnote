@@ -136,8 +136,30 @@ function SecretNoteApp() {
   var useState = React.useState, useEffect = React.useEffect;
   var [locked, setLocked]               = useState(true);
   var [view, setView]                   = useState("notebook"); /* notebook | editor | search | settings | trash */
-  var [secrets, setSecrets]             = useState(SAMPLE_SECRETS);
-  var [notebooks, setNotebooks]         = useState(DEFAULT_NOTEBOOKS);
+  var [secrets, setSecrets]             = useState(function(){
+    try {
+      var raw = localStorage.getItem("sn_secrets");
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error("[SecretNote] Failed to hydrate secrets, using defaults", e);
+    }
+    return SAMPLE_SECRETS;
+  });
+  var [notebooks, setNotebooks]         = useState(function(){
+    try {
+      var raw = localStorage.getItem("sn_notebooks");
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("[SecretNote] Failed to hydrate notebooks, using defaults", e);
+    }
+    return DEFAULT_NOTEBOOKS;
+  });
   var [activeNotebookId, setActiveNbId] = useState(1);
   var [editId, setEditId]               = useState(null);
   var [toast, setToast]                 = useState("");
@@ -145,6 +167,23 @@ function SecretNoteApp() {
   var [showPageLimit, setShowPageLimit] = useState(false);
   var [showNbLimit, setShowNbLimit]     = useState(false);
   var [plan, setPlan]                   = useState("basic"); /* basic | monthly | monthlyPlus | yearly */
+
+  /* ─── PERSISTANCE ─── */
+  /* Sauve secrets/notebooks à chaque changement. Quota dépassé → log + on continue. */
+  useEffect(function(){
+    try {
+      localStorage.setItem("sn_secrets", JSON.stringify(secrets));
+    } catch (e) {
+      console.error("[SecretNote] Failed to persist secrets (quota?)", e);
+    }
+  }, [secrets]);
+  useEffect(function(){
+    try {
+      localStorage.setItem("sn_notebooks", JSON.stringify(notebooks));
+    } catch (e) {
+      console.error("[SecretNote] Failed to persist notebooks (quota?)", e);
+    }
+  }, [notebooks]);
 
   var currentPlan = PLANS[plan] || PLANS.basic;
   var maxPages = currentPlan.maxPages;

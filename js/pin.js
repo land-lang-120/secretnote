@@ -2,7 +2,7 @@
 
 function PinScreen({ onUnlock }) {
   var useState = React.useState;
-  var hasPin = !!localStorage.getItem("sn_pin");
+  var hasPin = !!(localStorage.getItem("sn_pin_hash") || localStorage.getItem("sn_pin"));
   var [mode, setMode] = useState(hasPin ? "enter" : "create");
   var [pin, setPin] = useState("");
   var [createdPin, setCreatedPin] = useState("");
@@ -11,6 +11,36 @@ function PinScreen({ onUnlock }) {
   var [transitioning, setTransitioning] = useState(false);
 
   var doShake = function(){ setShake(true); setTimeout(function(){setShake(false)},500); };
+
+  /* Hash + persiste un nouveau PIN. Nettoie la clé legacy en clair. */
+  var savePinHash = function(plainPin) {
+    return snHashPin(plainPin).then(function(result){
+      try {
+        localStorage.setItem("sn_pin_hash", result.hashB64);
+        localStorage.setItem("sn_pin_salt", result.saltB64);
+        localStorage.removeItem("sn_pin");
+      } catch (e) {
+        console.error("[SecretNote] Failed to persist PIN hash", e);
+      }
+    });
+  };
+
+  /* Vérifie le PIN entré. Migre l'ancien format en clair à la première réussite. */
+  var verifyPin = function(enteredPin) {
+    var storedHash = localStorage.getItem("sn_pin_hash");
+    var storedSalt = localStorage.getItem("sn_pin_salt");
+    if (storedHash && storedSalt) {
+      return snHashPin(enteredPin, storedSalt).then(function(result){
+        return snConstantTimeEqual(result.hashB64, storedHash);
+      });
+    }
+    /* Legacy fallback : sn_pin en clair (avant migration crypto). */
+    var legacy = localStorage.getItem("sn_pin");
+    if (legacy && enteredPin === legacy) {
+      return savePinHash(enteredPin).then(function(){ return true; });
+    }
+    return Promise.resolve(false);
+  };
 
   var handleDigit = function(d) {
     if (transitioning) return;
@@ -37,8 +67,9 @@ function PinScreen({ onUnlock }) {
         if (nc.length === PIN_LENGTH) {
           setTransitioning(true);
           if (nc === createdPin) {
-            localStorage.setItem("sn_pin", createdPin);
-            setTimeout(onUnlock, 300);
+            savePinHash(createdPin).then(function(){
+              setTimeout(onUnlock, 300);
+            });
           } else {
             setError(sn("pinMismatch"));
             doShake();
@@ -58,17 +89,18 @@ function PinScreen({ onUnlock }) {
         setPin(ne);
         if (ne.length === PIN_LENGTH) {
           setTransitioning(true);
-          var stored = localStorage.getItem("sn_pin");
-          if (ne === stored) {
-            setTimeout(onUnlock, 300);
-          } else {
-            setError(sn("wrongPin"));
-            doShake();
-            setTimeout(function(){
-              setPin("");
-              setTransitioning(false);
-            }, 500);
-          }
+          verifyPin(ne).then(function(ok){
+            if (ok) {
+              setTimeout(onUnlock, 300);
+            } else {
+              setError(sn("wrongPin"));
+              doShake();
+              setTimeout(function(){
+                setPin("");
+                setTransitioning(false);
+              }, 500);
+            }
+          });
         }
       }
     }

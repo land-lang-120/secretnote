@@ -6,6 +6,7 @@ const FILES = [
   'js/config.js',
   'js/i18n.js',
   'js/data.js',
+  'js/crypto.js',
   'js/components.js',
   'js/pin.js',
   'js/notebook.js',
